@@ -1,2 +1,17 @@
-# Bloodlife
-BloodLife is a full-stack Blood Donation Management System that connects donors and recipients, manages blood requests, and streamlines the blood donation process using React.js, Node.js, Express.js, and MongoDB.
+# BloodLife
+Full-stack blood donation management platform inspired by the supplied BloodLife dashboard and authentication mockups.
+
+## Stack
+React + Vite, React Router, Tailwind CSS, Lucide React, React Hook Form + Zod, Axios, Recharts, React Leaflet, Node.js, Express, MongoDB, Mongoose, JWT and Cloudinary.
+
+## Run
+### Client
+cd client
+npm install
+npm run dev
+
+### Server
+cd server
+copy .env.example .env
+npm install
+npm run dev
