@@ -1,64 +1,196 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useState } from "react";
 
-import Layout from "../components/Layout";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
-import api from "../services/api";
+import {
+  useForm,
+} from "react-hook-form";
+
+import {
+  zodResolver,
+} from "@hookform/resolvers/zod";
+
+import {
+  z,
+} from "zod";
+
+import {
+  HeartPulse,
+  User,
+  Mail,
+  Lock,
+  MapPin,
+  Droplet,
+  Phone,
+} from "lucide-react";
+
+import axios from "axios";
 
 
-export default function Requests() {
+/* =========================================
+   FORM VALIDATION
+========================================= */
 
-  const [requests, setRequests] =
-    useState([]);
+const schema = z.object({
+
+  name: z
+    .string()
+    .min(
+      2,
+      "Name must be at least 2 characters"
+    ),
+
+  email: z
+    .string()
+    .email(
+      "Please enter a valid email"
+    ),
+
+  phone: z
+    .string()
+    .min(
+      10,
+      "Please enter a valid phone number"
+    ),
+
+  bloodGroup: z
+    .string()
+    .min(
+      1,
+      "Please select your blood group"
+    ),
+
+  location: z
+    .string()
+    .min(
+      2,
+      "Please enter your location"
+    ),
+
+  password: z
+    .string()
+    .min(
+      6,
+      "Password must be at least 6 characters"
+    ),
+
+});
+
+
+export default function Register() {
+
+  const nav = useNavigate();
+
+
+  const [registerError, setRegisterError] =
+    useState("");
+
 
   const [loading, setLoading] =
-    useState(true);
-
-  const [deletingId, setDeletingId] =
-    useState(null);
+    useState(false);
 
 
-  const loggedInUser =
-    JSON.parse(
-      localStorage.getItem("user")
-    );
+  const {
 
+    register,
 
-  useEffect(() => {
+    handleSubmit,
 
-    loadRequests();
+    formState: {
+      errors,
+    },
 
-  }, []);
+  } = useForm({
+
+    resolver:
+      zodResolver(schema),
+
+  });
 
 
 
   /* =========================================
-     LOAD BLOOD REQUESTS
+     REGISTER USER
   ========================================= */
 
-  const loadRequests =
-    async () => {
+  const submit =
+    async (data) => {
 
       try {
 
+        setLoading(true);
+
+        setRegisterError("");
+
+
         const response =
-          await api.get(
-            "/requests"
+          await axios.post(
+
+            `${
+              import.meta.env.VITE_API_URL ||
+              "http://localhost:5000/api"
+            }/auth/register`,
+
+            data
+
           );
 
 
-        setRequests(
+        console.log(
+          "Register response:",
           response.data
         );
+
+
+        /*
+        =================================
+        IMPORTANT
+
+        DO NOT AUTOMATICALLY GO TO
+        DASHBOARD AFTER REGISTERING.
+
+        USER MUST LOGIN FIRST.
+        =================================
+        */
+
+
+        alert(
+          "Registration successful! Please login."
+        );
+
+
+        /*
+        =================================
+        REDIRECT TO LOGIN
+        =================================
+        */
+
+        nav(
+          "/login"
+        );
+
 
       } catch (error) {
 
         console.error(
-          "Failed to load requests:",
+          "Register error:",
           error
         );
+
+
+        setRegisterError(
+
+          error.response
+            ?.data
+            ?.message ||
+
+          "Registration failed. Please try again."
+
+        );
+
 
       } finally {
 
@@ -70,420 +202,825 @@ export default function Requests() {
 
 
 
-  /* =========================================
-     DELETE / COMPLETE REQUEST
-  ========================================= */
-
-  const handleComplete =
-    async (requestId) => {
-
-      const confirmed =
-        window.confirm(
-          "Has blood been received? This request will be removed."
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
-      try {
-
-        setDeletingId(
-          requestId
-        );
-
-
-        await api.delete(
-          `/requests/${requestId}`,
-          {
-            data: {
-
-              userId:
-                loggedInUser._id,
-
-            },
-          }
-        );
-
-
-        // Remove request immediately from UI
-
-        setRequests(
-          requests.filter(
-            (request) =>
-              request._id !== requestId
-          )
-        );
-
-
-        alert(
-          "Blood request completed and removed successfully."
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Delete request error:",
-          error
-        );
-
-
-        alert(
-
-          error.response?.data?.message ||
-
-          "Failed to remove blood request"
-
-        );
-
-      } finally {
-
-        setDeletingId(
-          null
-        );
-
-      }
-
-    };
-
-
-
-  /* =========================================
-     FORMAT DATE
-  ========================================= */
-
-  const formatDate =
-    (date) => {
-
-      return new Date(
-        date
-      ).toLocaleString(
-        "en-IN"
-      );
-
-    };
-
-
-
-  /* =========================================
-     CHECK REQUEST OWNER
-  ========================================= */
-
-  const isRequestOwner =
-    (request) => {
-
-      if (
-        !loggedInUser ||
-        !request.requestedBy
-      ) {
-        return false;
-      }
-
-
-      return (
-
-        request.requestedBy.toString() ===
-
-        loggedInUser._id.toString()
-
-      );
-
-    };
-
-
-
   return (
 
-    <Layout>
-
-      <div className="p-6 max-w-7xl">
-
-
-        {/* HEADER */}
-
-        <div className="flex justify-between items-center">
-
-          <div>
-
-            <h1 className="text-3xl font-bold">
-
-              🩸 Blood Requests
-
-            </h1>
+    <div
+      className="
+        auth-bg
+        min-h-screen
+        grid
+        lg:grid-cols-2
+      "
+    >
 
 
-            <p className="text-slate-500 mt-2">
+      {/* =====================================
+          LEFT SIDE
+      ====================================== */}
 
-              Emergency blood requests from people in need.
+      <section
+        className="
+          hero-red
+          hidden
+          lg:flex
+          text-white
+          p-16
+          flex-col
+          justify-center
+        "
+      >
 
-            </p>
 
-          </div>
+        <HeartPulse
+          size={70}
+          className="mb-8"
+        />
 
 
-          {/* ACTIVE REQUEST COUNT */}
+        <h1
+          className="
+            text-5xl
+            font-bold
+          "
+        >
 
-          <div className="bg-red-100 text-red-600 px-5 py-3 rounded-xl font-bold">
+          Become a
+          <br />
 
-            Active Requests:
+          Life Saver.
 
-            {" "}
+        </h1>
 
-            {requests.length}
 
-          </div>
+        <p
+          className="
+            text-xl
+            mt-6
+          "
+        >
+
+          Join BloodLife and help
+          <br />
+
+          save lives.
+
+        </p>
+
+
+        <div
+          className="
+            mt-12
+            text-lg
+          "
+        >
+
+          🩸 Donate Blood
+
+          <br />
+
+          ❤️ Save Lives
+
+          <br />
+
+          🦸 Be a Hero
 
         </div>
 
 
+      </section>
 
-        {/* LOADING */}
 
-        {loading ? (
 
-          <div className="mt-8">
+      {/* =====================================
+          RIGHT SIDE
+      ====================================== */}
 
-            Loading blood requests...
+      <section
+        className="
+          flex
+          items-center
+          justify-center
+          p-6
+          py-10
+        "
+      >
 
-          </div>
 
-        ) : requests.length === 0 ? (
+        <form
 
-          <div className="card p-8 mt-8 text-center">
+          onSubmit={
+            handleSubmit(
+              submit
+            )
+          }
 
-            <h2 className="text-xl font-bold">
+          className="
+            glass
+            w-full
+            max-w-lg
+            rounded-3xl
+            p-8
+          "
 
-              No Active Blood Requests
+        >
+
+
+          {/* LOGO */}
+
+          <div
+            className="
+              text-center
+              mb-7
+            "
+          >
+
+
+            <HeartPulse
+              className="
+                mx-auto
+                text-blood
+              "
+              size={60}
+            />
+
+
+            <h1
+              className="
+                text-4xl
+                font-bold
+                mt-2
+              "
+            >
+
+              <span
+                className="
+                  text-blood
+                "
+              >
+
+                Blood
+
+              </span>
+
+              Life
+
+            </h1>
+
+
+            <h2
+              className="
+                text-2xl
+                font-bold
+                mt-5
+              "
+            >
+
+              Create Account
 
             </h2>
 
 
-            <p className="text-slate-500 mt-2">
+            <p
+              className="
+                text-slate-500
+                mt-1
+              "
+            >
 
-              There are currently no emergency requests.
+              Join us and help save lives.
 
             </p>
 
+
           </div>
 
-        ) : (
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5 mt-8">
 
+          {/* =====================================
+              ERROR MESSAGE
+          ====================================== */}
 
-            {requests.map(
-              (request) => (
+          {registerError && (
 
-                <div
-                  key={request._id}
-                  className="card p-6 border-l-4 border-red-500"
-                >
+            <div
+              className="
+                mb-4
+                p-3
+                rounded-lg
+                bg-red-100
+                text-red-700
+                text-sm
+              "
+            >
 
+              {registerError}
 
-                  {/* REQUEST HEADER */}
+            </div>
 
-                  <div className="flex justify-between items-start">
+          )}
 
-                    <div>
 
-                      <h2 className="text-xl font-bold">
 
-                        {request.patientName}
+          {/* =====================================
+              NAME
+          ====================================== */}
 
-                      </h2>
+          <label>
 
+            Full Name
 
-                      <p className="text-red-600 font-semibold mt-2">
+          </label>
 
-                        🚨 Emergency Blood Required
 
-                      </p>
+          <div
+            className="
+              relative
+              mt-2
+            "
+          >
 
-                    </div>
 
+            <User
+              className="
+                absolute
+                left-3
+                top-3
+                text-slate-400
+              "
+              size={19}
+            />
 
-                    <span className="bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold">
 
-                      {request.bloodGroup}
+            <input
 
-                    </span>
+              type="text"
 
-                  </div>
+              className="
+                field
+                pl-10
+              "
 
+              placeholder="
+                Enter your full name
+              "
 
+              {...register(
+                "name"
+              )}
 
-                  {/* REQUEST DETAILS */}
+            />
 
-                  <div className="mt-5 space-y-3">
 
+          </div>
 
-                    <p>
 
-                      📍
+          {errors.name && (
 
-                      {" "}
+            <p
+              className="
+                text-xs
+                text-blood
+                mt-1
+              "
+            >
 
-                      <b>Location:</b>
+              {errors.name.message}
 
-                      {" "}
+            </p>
 
-                      {request.location}
+          )}
 
-                    </p>
 
 
+          {/* =====================================
+              EMAIL
+          ====================================== */}
 
-                    <p>
+          <label
+            className="
+              block
+              mt-4
+            "
+          >
 
-                      🏥
+            Email
 
-                      {" "}
+          </label>
 
-                      <b>Hospital:</b>
 
-                      {" "}
+          <div
+            className="
+              relative
+              mt-2
+            "
+          >
 
-                      {request.hospital ||
 
-                        "Not specified"}
+            <Mail
+              className="
+                absolute
+                left-3
+                top-3
+                text-slate-400
+              "
+              size={19}
+            />
 
-                    </p>
 
+            <input
 
+              type="email"
 
-                    <p>
+              className="
+                field
+                pl-10
+              "
 
-                      🩸
+              placeholder="
+                Enter your email
+              "
 
-                      {" "}
+              {...register(
+                "email"
+              )}
 
-                      <b>Units Needed:</b>
+            />
 
-                      {" "}
 
-                      {request.units}
+          </div>
 
-                    </p>
 
+          {errors.email && (
 
+            <p
+              className="
+                text-xs
+                text-blood
+                mt-1
+              "
+            >
 
-                    <p>
+              {errors.email.message}
 
-                      📞
+            </p>
 
-                      {" "}
+          )}
 
-                      <b>Contact:</b>
 
-                      {" "}
 
-                      {request.phone}
+          {/* =====================================
+              PHONE
+          ====================================== */}
 
-                    </p>
+          <label
+            className="
+              block
+              mt-4
+            "
+          >
 
+            Phone Number
 
+          </label>
 
-                    {request.message && (
 
-                      <div className="bg-red-50 p-3 rounded-lg">
+          <div
+            className="
+              relative
+              mt-2
+            "
+          >
 
-                        <b>Message:</b>
 
+            <Phone
+              className="
+                absolute
+                left-3
+                top-3
+                text-slate-400
+              "
+              size={19}
+            />
 
-                        <p className="text-sm mt-1">
 
-                          {request.message}
+            <input
 
-                        </p>
+              type="tel"
 
-                      </div>
+              className="
+                field
+                pl-10
+              "
 
-                    )}
+              placeholder="
+                Enter your phone number
+              "
 
-                  </div>
+              {...register(
+                "phone"
+              )}
 
+            />
 
 
-                  {/* DATE */}
+          </div>
 
-                  <p className="text-xs text-slate-400 mt-5">
 
-                    Requested:
+          {errors.phone && (
 
-                    {" "}
+            <p
+              className="
+                text-xs
+                text-blood
+                mt-1
+              "
+            >
 
-                    {formatDate(
-                      request.createdAt
-                    )}
+              {errors.phone.message}
 
-                  </p>
+            </p>
 
+          )}
 
 
-                  {/* CONTACT BUTTON */}
 
-                  <a
-                    href={`tel:${request.phone}`}
-                    className="btn-red w-full mt-5 block text-center"
-                  >
+          {/* =====================================
+              BLOOD GROUP + LOCATION
+          ====================================== */}
 
-                    Contact Patient
+          <div
+            className="
+              grid
+              md:grid-cols-2
+              gap-4
+              mt-4
+            "
+          >
 
-                  </a>
 
+            {/* BLOOD GROUP */}
 
+            <div>
 
-                  {/* DELETE BUTTON ONLY FOR REQUEST OWNER */}
 
-                  {isRequestOwner(
-                    request
-                  ) && (
+              <label>
 
-                    <button
+                Blood Group
 
-                      onClick={() =>
+              </label>
 
-                        handleComplete(
-                          request._id
-                        )
 
-                      }
+              <div
+                className="
+                  relative
+                  mt-2
+                "
+              >
 
-                      disabled={
-                        deletingId ===
-                        request._id
-                      }
 
-                      className="w-full mt-3 border border-green-600 text-green-600 rounded-xl py-3 font-semibold hover:bg-green-50"
+                <Droplet
+                  className="
+                    absolute
+                    left-3
+                    top-3
+                    text-slate-400
+                    pointer-events-none
+                  "
+                  size={19}
+                />
 
-                    >
 
-                      {deletingId ===
-                      request._id
+                <select
 
-                        ? "Completing..."
+                  className="
+                    field
+                    pl-10
+                  "
 
-                        : "✓ Blood Received / Close Request"}
-
-                    </button>
-
+                  {...register(
+                    "bloodGroup"
                   )}
 
-                </div>
+                >
 
-              )
-            )}
+                  <option value="">
+
+                    Select
+
+                  </option>
+
+
+                  <option value="A+">
+
+                    A+
+
+                  </option>
+
+
+                  <option value="A-">
+
+                    A-
+
+                  </option>
+
+
+                  <option value="B+">
+
+                    B+
+
+                  </option>
+
+
+                  <option value="B-">
+
+                    B-
+
+                  </option>
+
+
+                  <option value="AB+">
+
+                    AB+
+
+                  </option>
+
+
+                  <option value="AB-">
+
+                    AB-
+
+                  </option>
+
+
+                  <option value="O+">
+
+                    O+
+
+                  </option>
+
+
+                  <option value="O-">
+
+                    O-
+
+                  </option>
+
+                </select>
+
+
+              </div>
+
+
+              {errors.bloodGroup && (
+
+                <p
+                  className="
+                    text-xs
+                    text-blood
+                    mt-1
+                  "
+                >
+
+                  {errors.bloodGroup.message}
+
+                </p>
+
+              )}
+
+
+            </div>
+
+
+
+            {/* LOCATION */}
+
+            <div>
+
+
+              <label>
+
+                Location
+
+              </label>
+
+
+              <div
+                className="
+                  relative
+                  mt-2
+                "
+              >
+
+
+                <MapPin
+                  className="
+                    absolute
+                    left-3
+                    top-3
+                    text-slate-400
+                  "
+                  size={19}
+                />
+
+
+                <input
+
+                  type="text"
+
+                  className="
+                    field
+                    pl-10
+                  "
+
+                  placeholder="
+                    Your location
+                  "
+
+                  {...register(
+                    "location"
+                  )}
+
+                />
+
+
+              </div>
+
+
+              {errors.location && (
+
+                <p
+                  className="
+                    text-xs
+                    text-blood
+                    mt-1
+                  "
+                >
+
+                  {errors.location.message}
+
+                </p>
+
+              )}
+
+
+            </div>
+
 
           </div>
 
-        )}
 
-      </div>
 
-    </Layout>
+          {/* =====================================
+              PASSWORD
+          ====================================== */}
+
+          <label
+            className="
+              block
+              mt-4
+            "
+          >
+
+            Password
+
+          </label>
+
+
+          <div
+            className="
+              relative
+              mt-2
+            "
+          >
+
+
+            <Lock
+              className="
+                absolute
+                left-3
+                top-3
+                text-slate-400
+              "
+              size={19}
+            />
+
+
+            <input
+
+              type="password"
+
+              className="
+                field
+                pl-10
+              "
+
+              placeholder="
+                Create a password
+              "
+
+              {...register(
+                "password"
+              )}
+
+            />
+
+
+          </div>
+
+
+          {errors.password && (
+
+            <p
+              className="
+                text-xs
+                text-blood
+                mt-1
+              "
+            >
+
+              {errors.password.message}
+
+            </p>
+
+          )}
+
+
+
+          {/* =====================================
+              REGISTER BUTTON
+          ====================================== */}
+
+          <button
+
+            type="submit"
+
+            disabled={loading}
+
+            className="
+              btn-red
+              w-full
+              mt-7
+              disabled:opacity-60
+              disabled:cursor-not-allowed
+            "
+
+          >
+
+            {
+
+              loading
+
+                ? "Creating Account..."
+
+                : "Create Account →"
+
+            }
+
+          </button>
+
+
+
+          {/* =====================================
+              LOGIN LINK
+          ====================================== */}
+
+          <p
+            className="
+              text-center
+              mt-6
+              text-slate-600
+            "
+          >
+
+            Already have an account?
+
+            {" "}
+
+            <Link
+
+              to="/login"
+
+              className="
+                text-blood
+                font-bold
+              "
+
+            >
+
+              Login
+
+            </Link>
+
+          </p>
+
+
+        </form>
+
+
+      </section>
+
+
+    </div>
 
   );
 
