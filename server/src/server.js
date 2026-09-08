@@ -56,6 +56,10 @@ app.use(
   bloodBankRoutes
 );
 
+app.get("/", (req, res) => {
+  res.send("BloodLife API is running 🚀");
+});
+
 /* DATABASE + SERVER */
 
 const startServer = async () => {
