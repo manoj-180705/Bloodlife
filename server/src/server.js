@@ -9,110 +9,81 @@ import authRoutes from "./routes/authRoutes.js";
 import bloodBankRoutes from "./routes/bloodBankRoutes.js";
 
 
+/* =========================================
+   LOAD ENV VARIABLES
+========================================= */
+
 dotenv.config();
 
+
+/* =========================================
+   CREATE APP
+========================================= */
 
 const app = express();
 
 
+/* =========================================
+   PORT
+========================================= */
+
 const PORT = process.env.PORT || 5000;
+
+
+/* =========================================
+   CORS
+========================================= */
+
+const corsOptions = {
+
+  origin: [
+    "http://localhost:5173",
+
+    "http://localhost:3000",
+
+    "https://bloodlife-3098.onrender.com",
+  ],
+
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+
+};
+
+
+app.use(cors(corsOptions));
+
+
+/* =========================================
+   HANDLE PREFLIGHT REQUESTS
+========================================= */
+
+app.options(
+  "*",
+  cors(corsOptions)
+);
 
 
 /* =========================================
    MIDDLEWARE
 ========================================= */
 
-
-/* CORS */
-
-const allowedOrigins = [
-
-  "http://localhost:5173",
-
-  "https://bloodlife-3098.onrender.com",
-
-];
-
+app.use(express.json());
 
 app.use(
-
-  cors({
-
-    origin: function (origin, callback) {
-
-      // Allow requests without origin
-      // Example: Postman
-
-      if (!origin) {
-
-        return callback(null, true);
-
-      }
-
-
-      if (
-
-        allowedOrigins.includes(origin)
-
-      ) {
-
-        return callback(null, true);
-
-      }
-
-
-      console.log(
-
-        "Blocked by CORS:",
-
-        origin
-
-      );
-
-
-      return callback(
-
-        new Error("Not allowed by CORS")
-
-      );
-
-    },
-
-
-    methods: [
-
-      "GET",
-
-      "POST",
-
-      "PUT",
-
-      "DELETE",
-
-      "OPTIONS",
-
-    ],
-
-
-    allowedHeaders: [
-
-      "Content-Type",
-
-      "Authorization",
-
-    ],
-
+  express.urlencoded({
+    extended: true,
   })
-
-);
-
-
-/* JSON */
-
-app.use(
-
-  express.json()
-
 );
 
 
@@ -120,66 +91,60 @@ app.use(
    ROUTES
 ========================================= */
 
-
-/* DONORS */
-
 app.use(
-
   "/api/donors",
-
   donorRoutes
-
 );
 
 
-/* AUTH */
-
 app.use(
-
   "/api/auth",
-
   authRoutes
-
 );
 
 
-/* BLOOD REQUESTS */
-
 app.use(
-
   "/api/requests",
-
   requestRoutes
-
 );
 
 
-/* BLOOD BANKS */
-
 app.use(
-
   "/api/blood-banks",
-
   bloodBankRoutes
-
 );
 
 
 /* =========================================
-   TEST ROUTE
+   HOME
+========================================= */
+
+app.get("/", (req, res) => {
+
+  res.status(200).send(
+    "BloodLife API is running 🚀"
+  );
+
+});
+
+
+/* =========================================
+   HEALTH CHECK
 ========================================= */
 
 app.get(
-
-  "/",
+  "/api/health",
 
   (req, res) => {
 
-    res.send(
+    res.status(200).json({
 
-      "BloodLife API is running 🚀"
+      success: true,
 
-    );
+      message:
+        "BloodLife API is running",
+
+    });
 
   }
 
@@ -194,60 +159,37 @@ const startServer = async () => {
 
   try {
 
-
-    /* CHECK ENVIRONMENT VARIABLES */
-
-    if (
-
-      !process.env.MONGODB_URI
-
-    ) {
+    if (!process.env.MONGODB_URI) {
 
       throw new Error(
-
         "MONGODB_URI is missing"
-
       );
 
     }
 
 
-    if (
-
-      !process.env.JWT_SECRET
-
-    ) {
+    if (!process.env.JWT_SECRET) {
 
       throw new Error(
-
         "JWT_SECRET is missing"
-
       );
 
     }
 
-
-    /* CONNECT DATABASE */
 
     await mongoose.connect(
-
       process.env.MONGODB_URI
-
     );
 
 
     console.log(
-
       "MongoDB connected"
-
     );
 
 
-    /* START SERVER */
-
     app.listen(
-
       PORT,
+      "0.0.0.0",
 
       () => {
 
@@ -264,18 +206,12 @@ const startServer = async () => {
 
   } catch (error) {
 
-
     console.error(
-
       "Server startup failed:",
-
       error.message
-
     );
 
-
     process.exit(1);
-
 
   }
 

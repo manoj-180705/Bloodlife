@@ -11,7 +11,9 @@ const router = express.Router();
 ========================================= */
 
 router.post("/register", async (req, res) => {
+
   try {
+
     const {
       name,
       email,
@@ -22,90 +24,191 @@ router.post("/register", async (req, res) => {
     } = req.body;
 
 
-    // Validate required fields
+    /* VALIDATE REQUIRED FIELDS */
+
     if (!name || !email || !phone || !password) {
+
       return res.status(400).json({
+
         message: "Please fill all required fields",
+
       });
+
     }
 
 
-    // Check existing user
-    const existingUser = await User.findOne({
-      email: email.toLowerCase(),
-    });
+    /* CHECK JWT SECRET */
+
+    if (!process.env.JWT_SECRET) {
+
+      console.error("JWT_SECRET is missing");
+
+      return res.status(500).json({
+
+        message: "Server configuration error",
+
+      });
+
+    }
+
+
+    /* CHECK EXISTING USER */
+
+    const existingUser =
+      await User.findOne({
+
+        email: email.toLowerCase(),
+
+      });
 
 
     if (existingUser) {
+
       return res.status(400).json({
+
         message: "User already exists with this email",
+
       });
+
     }
 
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
+    /* HASH PASSWORD */
+
+    const hashedPassword =
+      await bcrypt.hash(
+
+        password,
+
+        10
+
+      );
 
 
-    // Create user
-    const user = await User.create({
-      name,
-      email: email.toLowerCase(),
-      phone,
-      password: hashedPassword,
-      bloodGroup: bloodGroup || "Not Specified",
-      location: location || "Not Specified",
-    });
+    /* CREATE USER */
+
+    const user =
+      await User.create({
+
+        name,
+
+        email:
+          email.toLowerCase(),
+
+        phone,
+
+        password:
+          hashedPassword,
+
+        bloodGroup:
+          bloodGroup || "Not Specified",
+
+        location:
+          location || "Not Specified",
+
+      });
 
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        id: user._id.toString(),
-        email: user.email,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+    /* CREATE JWT TOKEN */
+
+    const token =
+      jwt.sign(
+
+        {
+
+          id:
+            user._id.toString(),
+
+          email:
+            user.email,
+
+        },
+
+        process.env.JWT_SECRET,
+
+        {
+
+          expiresIn:
+            "7d",
+
+        }
+
+      );
 
 
-    res.status(201).json({
-      message: "Registration successful",
+    /* SUCCESS RESPONSE */
+
+    return res.status(201).json({
+
+      message:
+        "Registration successful",
 
       token,
 
       user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        bloodGroup: user.bloodGroup,
-        location: user.location,
-        lastDonated: user.lastDonated,
-        isAvailable: user.isAvailable,
-        donations: user.donations,
-        points: user.points,
-        role: user.role,
+
+        _id:
+          user._id,
+
+        name:
+          user.name,
+
+        email:
+          user.email,
+
+        phone:
+          user.phone,
+
+        bloodGroup:
+          user.bloodGroup,
+
+        location:
+          user.location,
+
+        lastDonated:
+          user.lastDonated,
+
+        isAvailable:
+          user.isAvailable,
+
+        donations:
+          user.donations,
+
+        points:
+          user.points,
+
+        role:
+          user.role,
+
       },
+
     });
 
+
   } catch (error) {
+
+
+    /* LOG COMPLETE ERROR */
 
     console.error(
       "Registration error:",
       error
     );
 
-    res.status(500).json({
-      message: "Registration failed",
+
+    return res.status(500).json({
+
+      message:
+        "Registration failed",
+
+      error:
+        error.message,
+
     });
 
+
   }
+
 });
 
 
@@ -114,7 +217,9 @@ router.post("/register", async (req, res) => {
 ========================================= */
 
 router.post("/login", async (req, res) => {
+
   try {
+
 
     const {
       email,
@@ -122,101 +227,180 @@ router.post("/login", async (req, res) => {
     } = req.body;
 
 
-    // Validate
+    /* VALIDATE */
+
     if (!email || !password) {
+
       return res.status(400).json({
-        message: "Email and password are required",
+
+        message:
+          "Email and password are required",
+
       });
+
     }
 
 
-    // Find user
-    const user = await User.findOne({
-      email: email.toLowerCase(),
-    });
+    /* CHECK JWT SECRET */
+
+    if (!process.env.JWT_SECRET) {
+
+      console.error(
+        "JWT_SECRET is missing"
+      );
+
+      return res.status(500).json({
+
+        message:
+          "Server configuration error",
+
+      });
+
+    }
+
+
+    /* FIND USER */
+
+    const user =
+      await User.findOne({
+
+        email:
+          email.toLowerCase(),
+
+      });
 
 
     if (!user) {
+
       return res.status(401).json({
-        message: "Invalid email or password",
+
+        message:
+          "Invalid email or password",
+
       });
+
     }
 
 
-    // Compare password
+    /* COMPARE PASSWORD */
+
     const isPasswordCorrect =
       await bcrypt.compare(
+
         password,
+
         user.password
+
       );
 
 
     if (!isPasswordCorrect) {
+
       return res.status(401).json({
-        message: "Invalid email or password",
+
+        message:
+          "Invalid email or password",
+
       });
+
     }
 
 
-    // Create token
-    const token = jwt.sign(
-      {
-        id: user._id.toString(),
-        email: user.email,
-      },
+    /* CREATE TOKEN */
 
-      process.env.JWT_SECRET,
+    const token =
+      jwt.sign(
 
-      {
-        expiresIn: "7d",
-      }
-    );
+        {
+
+          id:
+            user._id.toString(),
+
+          email:
+            user.email,
+
+        },
+
+        process.env.JWT_SECRET,
+
+        {
+
+          expiresIn:
+            "7d",
+
+        }
+
+      );
 
 
-    res.status(200).json({
+    /* SUCCESS RESPONSE */
 
-      message: "Login successful",
+    return res.status(200).json({
+
+      message:
+        "Login successful",
 
       token,
 
       user: {
 
-        _id: user._id,
+        _id:
+          user._id,
 
-        name: user.name,
+        name:
+          user.name,
 
-        email: user.email,
+        email:
+          user.email,
 
-        phone: user.phone,
+        phone:
+          user.phone,
 
-        bloodGroup: user.bloodGroup,
+        bloodGroup:
+          user.bloodGroup,
 
-        location: user.location,
+        location:
+          user.location,
 
-        lastDonated: user.lastDonated,
+        lastDonated:
+          user.lastDonated,
 
-        isAvailable: user.isAvailable,
+        isAvailable:
+          user.isAvailable,
 
-        donations: user.donations,
+        donations:
+          user.donations,
 
-        points: user.points,
+        points:
+          user.points,
 
-        role: user.role,
+        role:
+          user.role,
 
       },
 
     });
 
+
   } catch (error) {
+
 
     console.error(
       "Login error:",
       error
     );
 
-    res.status(500).json({
-      message: "Login failed",
+
+    return res.status(500).json({
+
+      message:
+        "Login failed",
+
+      error:
+        error.message,
+
     });
+
 
   }
 
