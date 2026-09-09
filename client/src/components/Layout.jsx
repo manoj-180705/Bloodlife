@@ -91,8 +91,43 @@ export default function Layout({ children }) {
 
         {/* LOGO */}
 
-        <div className="flex items-center gap-2 text-2xl font-bold mb-10">
+        {/* LOGO */}
 
+      <div className="flex items-center justify-between gap-2 text-2xl font-bold mb-10">
+
+        <div className="flex items-center gap-2">
+
+          <HeartPulse
+            className="text-blood"
+            size={38}
+          />
+
+          <span>
+
+          <span className="text-blood">
+             Blood
+          </span>
+
+           Life
+
+          </span>
+
+        </div>
+
+
+       {/* MOBILE CLOSE BUTTON */}
+
+        <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100"
+            aria-label="Close menu"
+          >
+
+          <X size={26} />
+
+        </button>
+
+      </div>
           <HeartPulse
             className="text-blood"
             size={38}
