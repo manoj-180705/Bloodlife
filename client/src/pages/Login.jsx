@@ -25,10 +25,11 @@ import {
   Mail,
 } from "lucide-react";
 
-import axios from "axios";
+import api from "../services/api";
 
 
 const schema = z.object({
+
   email: z
     .string()
     .email("Please enter a valid email"),
@@ -39,10 +40,12 @@ const schema = z.object({
       6,
       "Password must be at least 6 characters"
     ),
+
 });
 
 
 export default function Login() {
+
 
   const nav = useNavigate();
 
@@ -56,11 +59,15 @@ export default function Login() {
 
 
   const {
+
     register,
+
     handleSubmit,
+
     formState: {
       errors,
     },
+
   } = useForm({
 
     resolver:
@@ -68,6 +75,11 @@ export default function Login() {
 
   });
 
+
+
+  /* =========================================
+     LOGIN
+  ========================================= */
 
   const submit =
     async (data) => {
@@ -79,13 +91,16 @@ export default function Login() {
         setLoginError("");
 
 
-        const response =
-          await axios.post(
+        /*
+        =========================================
+        SEND LOGIN REQUEST
+        =========================================
+        */
 
-            `${
-              import.meta.env.VITE_API_URL ||
-              "http://localhost:5000/api"
-            }/auth/login`,
+        const response =
+          await api.post(
+
+            "/auth/login",
 
             data
 
@@ -99,9 +114,9 @@ export default function Login() {
 
 
         /*
-        =================================
-        SAVE LOGIN TOKEN
-        =================================
+        =========================================
+        SAVE JWT TOKEN
+        =========================================
         */
 
         localStorage.setItem(
@@ -114,9 +129,9 @@ export default function Login() {
 
 
         /*
-        =================================
-        SAVE LOGGED-IN USER
-        =================================
+        =========================================
+        SAVE USER DATA
+        =========================================
         */
 
         localStorage.setItem(
@@ -131,9 +146,9 @@ export default function Login() {
 
 
         /*
-        =================================
-        REDIRECT ONLY AFTER SUCCESS
-        =================================
+        =========================================
+        REDIRECT TO DASHBOARD
+        =========================================
         */
 
         nav(
@@ -143,6 +158,7 @@ export default function Login() {
 
       } catch (error) {
 
+
         console.error(
           "Login error:",
           error
@@ -150,9 +166,9 @@ export default function Login() {
 
 
         /*
-        =================================
-        SHOW BACKEND ERROR
-        =================================
+        =========================================
+        SHOW ERROR MESSAGE
+        =========================================
         */
 
         setLoginError(
@@ -168,28 +184,37 @@ export default function Login() {
 
       } finally {
 
+
         setLoading(false);
+
 
       }
 
     };
 
 
+
   return (
 
+
     <div
+
       className="
         auth-bg
         min-h-screen
         grid
         lg:grid-cols-2
       "
+
     >
 
 
-      {/* LEFT SIDE */}
+      {/* =====================================
+          LEFT SIDE
+      ===================================== */}
 
       <section
+
         className="
           hero-red
           hidden
@@ -199,16 +224,21 @@ export default function Login() {
           flex-col
           justify-center
         "
+
       >
 
+
         <h1
+
           className="
             text-5xl
             font-bold
           "
+
         >
 
           Every Drop
+
           <br />
 
           Counts.
@@ -216,11 +246,14 @@ export default function Login() {
         </h1>
 
 
+
         <p
+
           className="
             text-xl
             mt-6
           "
+
         >
 
           Donate Blood,
@@ -232,26 +265,34 @@ export default function Login() {
         </p>
 
 
+
         <div
+
           className="
             blood-drop
             mt-20
           "
+
         />
+
 
       </section>
 
 
 
-      {/* RIGHT SIDE */}
+      {/* =====================================
+          RIGHT SIDE
+      ===================================== */}
 
       <section
+
         className="
           flex
           items-center
           justify-center
           p-6
         "
+
       >
 
 
@@ -274,35 +315,48 @@ export default function Login() {
         >
 
 
-          {/* LOGO */}
+          {/* =====================================
+              LOGO
+          ===================================== */}
 
           <div
+
             className="
               text-center
               mb-8
             "
+
           >
 
+
             <HeartPulse
+
               className="
                 mx-auto
                 text-blood
               "
+
               size={68}
+
             />
 
 
             <h1
+
               className="
                 text-4xl
                 font-bold
               "
+
             >
 
+
               <span
+
                 className="
                   text-blood
                 "
+
               >
 
                 Blood
@@ -311,13 +365,17 @@ export default function Login() {
 
               Life
 
+
             </h1>
 
 
+
             <p
+
               className="
                 text-slate-500
               "
+
             >
 
               Save a Life. Be a Hero.
@@ -325,12 +383,15 @@ export default function Login() {
             </p>
 
 
+
             <h2
+
               className="
                 text-2xl
                 font-bold
                 mt-8
               "
+
             >
 
               Welcome Back!
@@ -338,10 +399,13 @@ export default function Login() {
             </h2>
 
 
+
             <p
+
               className="
                 text-slate-500
               "
+
             >
 
               Login to continue your journey
@@ -349,15 +413,19 @@ export default function Login() {
 
             </p>
 
+
           </div>
 
 
 
-          {/* LOGIN ERROR */}
+          {/* =====================================
+              LOGIN ERROR
+          ===================================== */}
 
           {loginError && (
 
             <div
+
               className="
                 mb-4
                 p-3
@@ -366,6 +434,7 @@ export default function Login() {
                 text-red-700
                 text-sm
               "
+
             >
 
               {loginError}
@@ -376,7 +445,9 @@ export default function Login() {
 
 
 
-          {/* EMAIL */}
+          {/* =====================================
+              EMAIL
+          ===================================== */}
 
           <label>
 
@@ -385,22 +456,29 @@ export default function Login() {
           </label>
 
 
+
           <div
+
             className="
               relative
               mt-2
               mb-1
             "
+
           >
 
+
             <Mail
+
               className="
                 absolute
                 left-3
                 top-3
                 text-slate-400
               "
+
               size={19}
+
             />
 
 
@@ -417,22 +495,24 @@ export default function Login() {
                 "email"
               )}
 
-              placeholder="
-                Enter your email
-              "
+              placeholder="Enter your email"
 
             />
 
+
           </div>
+
 
 
           {errors.email && (
 
             <p
+
               className="
                 text-xs
                 text-blood
               "
+
             >
 
               {errors.email.message}
@@ -443,13 +523,17 @@ export default function Login() {
 
 
 
-          {/* PASSWORD */}
+          {/* =====================================
+              PASSWORD
+          ===================================== */}
 
           <label
+
             className="
               block
               mt-5
             "
+
           >
 
             Password
@@ -457,21 +541,28 @@ export default function Login() {
           </label>
 
 
+
           <div
+
             className="
               relative
               mt-2
             "
+
           >
 
+
             <Lock
+
               className="
                 absolute
                 left-3
                 top-3
                 text-slate-400
               "
+
               size={19}
+
             />
 
 
@@ -488,23 +579,25 @@ export default function Login() {
                 "password"
               )}
 
-              placeholder="
-                Enter your password
-              "
+              placeholder="Enter your password"
 
             />
 
+
           </div>
+
 
 
           {errors.password && (
 
             <p
+
               className="
                 text-xs
                 text-blood
                 mt-1
               "
+
             >
 
               {errors.password.message}
@@ -515,7 +608,9 @@ export default function Login() {
 
 
 
-          {/* LOGIN BUTTON */}
+          {/* =====================================
+              LOGIN BUTTON
+          ===================================== */}
 
           <button
 
@@ -545,19 +640,24 @@ export default function Login() {
 
 
 
-          {/* REGISTER */}
+          {/* =====================================
+              REGISTER LINK
+          ===================================== */}
 
           <p
+
             className="
               text-center
               mt-7
               text-slate-600
             "
+
           >
 
             Don't have an account?
 
             {" "}
+
 
             <Link
 
@@ -574,6 +674,7 @@ export default function Login() {
 
             </Link>
 
+
           </p>
 
 
@@ -584,6 +685,7 @@ export default function Login() {
 
 
     </div>
+
 
   );
 

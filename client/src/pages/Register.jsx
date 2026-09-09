@@ -27,7 +27,7 @@ import {
   Phone,
 } from "lucide-react";
 
-import axios from "axios";
+import api from "../services/api";
 
 
 /* =========================================
@@ -82,7 +82,7 @@ const schema = z.object({
 
 export default function Register() {
 
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
 
   const [registerError, setRegisterError] =
@@ -116,89 +116,71 @@ export default function Register() {
      REGISTER USER
   ========================================= */
 
-  const submit =
-    async (data) => {
+  const submit = async (data) => {
 
-      try {
+    try {
 
-        setLoading(true);
+      setLoading(true);
 
-        setRegisterError("");
-
-
-        const response =
-          await axios.post(
-
-            `${
-              import.meta.env.VITE_API_URL ||
-              "http://localhost:5000/api"
-            }/auth/register`,
-
-            data
-
-          );
+      setRegisterError("");
 
 
-        console.log(
-          "Register response:",
-          response.data
-        );
+      /* SEND DATA TO BACKEND */
+
+      await api.post(
+        "/auth/register",
+        data
+      );
 
 
-        /*
-        =================================
-        IMPORTANT
+      /*
+      =========================================
 
-        DO NOT AUTOMATICALLY GO TO
-        DASHBOARD AFTER REGISTERING.
+      IMPORTANT
 
-        USER MUST LOGIN FIRST.
-        =================================
-        */
+      Registration does NOT login the user.
 
+      User must login separately.
 
-        alert(
-          "Registration successful! Please login."
-        );
+      =========================================
+      */
 
 
-        /*
-        =================================
-        REDIRECT TO LOGIN
-        =================================
-        */
-
-        nav(
-          "/login"
-        );
+      alert(
+        "Registration successful! Please login."
+      );
 
 
-      } catch (error) {
+      /* REDIRECT TO LOGIN */
 
-        console.error(
-          "Register error:",
-          error
-        );
+      navigate("/login");
 
 
-        setRegisterError(
+    } catch (error) {
 
-          error.response
-            ?.data
-            ?.message ||
-
-          "Registration failed. Please try again."
-
-        );
+      console.error(
+        "Registration error:",
+        error
+      );
 
 
-      } finally {
+      setRegisterError(
 
-        setLoading(false);
+        error.response
+          ?.data
+          ?.message ||
 
-      }
+        "Registration failed. Please try again."
 
-    };
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
 
 
 
@@ -214,9 +196,7 @@ export default function Register() {
     >
 
 
-      {/* =====================================
-          LEFT SIDE
-      ====================================== */}
+      {/* LEFT SIDE */}
 
       <section
         className="
@@ -229,7 +209,6 @@ export default function Register() {
           justify-center
         "
       >
-
 
         <HeartPulse
           size={70}
@@ -291,9 +270,7 @@ export default function Register() {
 
 
 
-      {/* =====================================
-          RIGHT SIDE
-      ====================================== */}
+      {/* RIGHT SIDE */}
 
       <section
         className="
@@ -309,9 +286,7 @@ export default function Register() {
         <form
 
           onSubmit={
-            handleSubmit(
-              submit
-            )
+            handleSubmit(submit)
           }
 
           className="
@@ -334,7 +309,6 @@ export default function Register() {
             "
           >
 
-
             <HeartPulse
               className="
                 mx-auto
@@ -352,11 +326,7 @@ export default function Register() {
               "
             >
 
-              <span
-                className="
-                  text-blood
-                "
-              >
+              <span className="text-blood">
 
                 Blood
 
@@ -396,9 +366,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              ERROR MESSAGE
-          ====================================== */}
+          {/* ERROR MESSAGE */}
 
           {registerError && (
 
@@ -421,9 +389,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              NAME
-          ====================================== */}
+          {/* NAME */}
 
           <label>
 
@@ -438,7 +404,6 @@ export default function Register() {
               mt-2
             "
           >
-
 
             <User
               className="
@@ -464,25 +429,16 @@ export default function Register() {
                 Enter your full name
               "
 
-              {...register(
-                "name"
-              )}
+              {...register("name")}
 
             />
-
 
           </div>
 
 
           {errors.name && (
 
-            <p
-              className="
-                text-xs
-                text-blood
-                mt-1
-              "
-            >
+            <p className="text-xs text-blood mt-1">
 
               {errors.name.message}
 
@@ -492,9 +448,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              EMAIL
-          ====================================== */}
+          {/* EMAIL */}
 
           <label
             className="
@@ -514,7 +468,6 @@ export default function Register() {
               mt-2
             "
           >
-
 
             <Mail
               className="
@@ -540,25 +493,16 @@ export default function Register() {
                 Enter your email
               "
 
-              {...register(
-                "email"
-              )}
+              {...register("email")}
 
             />
-
 
           </div>
 
 
           {errors.email && (
 
-            <p
-              className="
-                text-xs
-                text-blood
-                mt-1
-              "
-            >
+            <p className="text-xs text-blood mt-1">
 
               {errors.email.message}
 
@@ -568,9 +512,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              PHONE
-          ====================================== */}
+          {/* PHONE */}
 
           <label
             className="
@@ -590,7 +532,6 @@ export default function Register() {
               mt-2
             "
           >
-
 
             <Phone
               className="
@@ -616,25 +557,16 @@ export default function Register() {
                 Enter your phone number
               "
 
-              {...register(
-                "phone"
-              )}
+              {...register("phone")}
 
             />
-
 
           </div>
 
 
           {errors.phone && (
 
-            <p
-              className="
-                text-xs
-                text-blood
-                mt-1
-              "
-            >
+            <p className="text-xs text-blood mt-1">
 
               {errors.phone.message}
 
@@ -644,9 +576,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              BLOOD GROUP + LOCATION
-          ====================================== */}
+          {/* BLOOD GROUP + LOCATION */}
 
           <div
             className="
@@ -662,7 +592,6 @@ export default function Register() {
 
             <div>
 
-
               <label>
 
                 Blood Group
@@ -676,7 +605,6 @@ export default function Register() {
                   mt-2
                 "
               >
-
 
                 <Droplet
                   className="
@@ -697,96 +625,60 @@ export default function Register() {
                     pl-10
                   "
 
-                  {...register(
-                    "bloodGroup"
-                  )}
+                  {...register("bloodGroup")}
 
                 >
 
                   <option value="">
-
                     Select
-
                   </option>
-
 
                   <option value="A+">
-
                     A+
-
                   </option>
-
 
                   <option value="A-">
-
                     A-
-
                   </option>
-
 
                   <option value="B+">
-
                     B+
-
                   </option>
-
 
                   <option value="B-">
-
                     B-
-
                   </option>
-
 
                   <option value="AB+">
-
                     AB+
-
                   </option>
-
 
                   <option value="AB-">
-
                     AB-
-
                   </option>
-
 
                   <option value="O+">
-
                     O+
-
                   </option>
 
-
                   <option value="O-">
-
                     O-
-
                   </option>
 
                 </select>
-
 
               </div>
 
 
               {errors.bloodGroup && (
 
-                <p
-                  className="
-                    text-xs
-                    text-blood
-                    mt-1
-                  "
-                >
+                <p className="text-xs text-blood mt-1">
 
                   {errors.bloodGroup.message}
 
                 </p>
 
               )}
-
 
             </div>
 
@@ -795,7 +687,6 @@ export default function Register() {
             {/* LOCATION */}
 
             <div>
-
 
               <label>
 
@@ -810,7 +701,6 @@ export default function Register() {
                   mt-2
                 "
               >
-
 
                 <MapPin
                   className="
@@ -836,32 +726,22 @@ export default function Register() {
                     Your location
                   "
 
-                  {...register(
-                    "location"
-                  )}
+                  {...register("location")}
 
                 />
-
 
               </div>
 
 
               {errors.location && (
 
-                <p
-                  className="
-                    text-xs
-                    text-blood
-                    mt-1
-                  "
-                >
+                <p className="text-xs text-blood mt-1">
 
                   {errors.location.message}
 
                 </p>
 
               )}
-
 
             </div>
 
@@ -870,9 +750,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              PASSWORD
-          ====================================== */}
+          {/* PASSWORD */}
 
           <label
             className="
@@ -892,7 +770,6 @@ export default function Register() {
               mt-2
             "
           >
-
 
             <Lock
               className="
@@ -918,25 +795,16 @@ export default function Register() {
                 Create a password
               "
 
-              {...register(
-                "password"
-              )}
+              {...register("password")}
 
             />
-
 
           </div>
 
 
           {errors.password && (
 
-            <p
-              className="
-                text-xs
-                text-blood
-                mt-1
-              "
-            >
+            <p className="text-xs text-blood mt-1">
 
               {errors.password.message}
 
@@ -946,9 +814,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              REGISTER BUTTON
-          ====================================== */}
+          {/* REGISTER BUTTON */}
 
           <button
 
@@ -966,13 +832,11 @@ export default function Register() {
 
           >
 
-            {
+            {loading
 
-              loading
+              ? "Creating Account..."
 
-                ? "Creating Account..."
-
-                : "Create Account →"
+              : "Create Account →"
 
             }
 
@@ -980,9 +844,7 @@ export default function Register() {
 
 
 
-          {/* =====================================
-              LOGIN LINK
-          ====================================== */}
+          {/* LOGIN LINK */}
 
           <p
             className="
