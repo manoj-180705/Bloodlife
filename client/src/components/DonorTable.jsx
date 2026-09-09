@@ -287,8 +287,7 @@ export default function DonorTable() {
 
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
 
-
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl relative overflow-hidden">
+            <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto shadow-xl relative">
 
 
             {/* CLOSE BUTTON */}
